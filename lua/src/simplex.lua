@@ -508,6 +508,38 @@ function FractalSum(func, iter, ...)
     return ret
 end
 
+function FractalSumAbs(func, iter, ...)
+    local ret = math.abs(func(...))
+    for i=1,iter do
+        local power = 2^iter
+        local s = power/i
+        
+        local scaled = {}
+        for elem in ipairs(...) do
+            table.insert(scaled, elem*s)
+        end
+        ret = ret + (i/power)*(math.abs(func(unpack(scaled))))
+    end
+    return ret
+end
+
+function Turbulence(func, direction, iter, ...)
+    local ret = math.abs(func(...))
+    for i=1,iter do
+        local power = 2^iter
+        local s = power/i
+        
+        local scaled = {}
+        for elem in ipairs(...) do
+            table.insert(scaled, elem*s)
+        end
+        ret = ret + (i/power)*(math.abs(func(unpack(scaled))))
+    end
+    local dir_component = {...}[direction+1]
+    return math.sin(dir_component+ret)
+end
+
+--[[
 function FractalSum2DNoise(x,y,itier) --very expensive, much more so that standard 2D noise.
 	local ret = Noise2D(x,y)
 	for i=1,itier do
@@ -618,4 +650,4 @@ function Turbulent4DNoise(x,y,z,w,itier,dir) --very expensive, much more so that
 		direction = x
 	end
 	return math.sin(direction+ret)
-end 
+end ]]
