@@ -535,7 +535,8 @@ function Turbulence(func, direction, iter, ...)
         end
         ret = ret + (i/power)*(math.abs(func(unpack(scaled))))
     end
-    local dir_component = {...}[direction+1]
+    local args = {...}
+    local dir_component = args[direction+1]
     return math.sin(dir_component+ret)
 end
 
