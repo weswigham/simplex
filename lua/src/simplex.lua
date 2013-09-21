@@ -11,13 +11,13 @@ local ipairs = ipairs
 local error = error
 local bit = require("bit")
 
-module("simplex")
+local simplex = {}
 
-DIR_X = 0
-DIR_Y = 1
-DIR_Z = 2
-DIR_W = 3
-local internalCache = false
+simplex.DIR_X = 0
+simplex.DIR_Y = 1
+simplex.DIR_Z = 2
+simplex.DIR_W = 3
+simplex.internalCache = false
 
 
 local Gradients3D = {{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},
@@ -69,10 +69,10 @@ for i=0,255 do
 	perm[i+256] = p[i]
 end
 
--- A lookup table to traverse the simplex around a given point in 4D.
+-- A lookup table to traverse the sim around a given point in 4D.
 -- Details can be found where this table is used, in the 4D noise method.
 
-local simplex = {
+local sim = {
 {0,1,2,3},{0,1,3,2},{0,0,0,0},{0,2,3,1},{0,0,0,0},{0,0,0,0},{0,0,0,0},{1,2,3,0},
 {0,2,1,3},{0,0,0,0},{0,3,1,2},{0,3,2,1},{0,0,0,0},{0,0,0,0},{0,0,0,0},{1,3,2,0},
 {0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},
@@ -99,8 +99,8 @@ local Prev2D = {}
 
 -- 2D simplex noise
 
-function Noise2D(xin, yin)
-	if internalCache and Prev2D[xin] and Prev2D[xin][yin] then return Prev2D[xin][yin] end 
+function simplex.Noise2D(xin, yin)
+	if simplex.internalCache and Prev2D[xin] and Prev2D[xin][yin] then return Prev2D[xin][yin] end 
 
 	local n0, n1, n2; -- Noise contributions from the three corners
 	-- Skew the input space to determine which simplex cell we're in
@@ -174,7 +174,7 @@ function Noise2D(xin, yin)
 	
 	local retval = 70.0 * (n0 + n1 + n2)
 	
-	if internalCache then
+	if simplex.internalCache then
 		if not Prev2D[xin] then Prev2D[xin] = {} end
 		Prev2D[xin][yin] = retval
 	end
@@ -185,9 +185,9 @@ end
 local Prev3D = {}
 
 -- 3D simplex noise
-function Noise3D(xin, yin, zin)
+function simplex.Noise3D(xin, yin, zin)
 	
-	if internalCache and Prev3D[xin] and Prev3D[xin][yin] and Prev3D[xin][yin][zin] then return Prev3D[xin][yin][zin] end
+	if simplex.internalCache and Prev3D[xin] and Prev3D[xin][yin] and Prev3D[xin][yin][zin] then return Prev3D[xin][yin][zin] end
 	
 	local n0, n1, n2, n3; -- Noise contributions from the four corners
 	
@@ -301,7 +301,7 @@ function Noise3D(xin, yin, zin)
 	-- The result is scaled to stay just inside [-1,1]
 	local retval = 32.0*(n0 + n1 + n2 + n3)
 	
-	if internalCache then
+	if simplex.internalCache then
 		if not Prev3D[xin] then Prev3D[xin] = {} end
 		if not Prev3D[xin][yin] then Prev3D[xin][yin] = {} end
 		Prev3D[xin][yin][zin] = retval
@@ -313,9 +313,9 @@ end
 local Prev4D = {}
 
 -- 4D simplex noise
-function Noise4D(x,y,z,w)
+function simplex.Noise4D(x,y,z,w)
 
-	if internalCache and Prev4D[x] and Prev4D[x][y] and Prev4D[x][y][z] and Prev4D[x][y][z][w] then return Prev4D[x][y][z][w] end
+	if simplex.internalCache and Prev4D[x] and Prev4D[x][y] and Prev4D[x][y][z] and Prev4D[x][y][z][w] then return Prev4D[x][y][z][w] end
 	
 	-- The skewing and unskewing factors are hairy again for the 4D case
 	local F4 = (math.sqrt(5.0)-1.0)/4.0;
@@ -355,26 +355,26 @@ function Noise4D(x,y,z,w)
 	local i2, j2, k2, l2; -- The localeger offsets for the third simplex corner
 	local i3, j3, k3, l3; -- The localeger offsets for the fourth simplex corner
 	
-	-- simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
+	-- sim[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
 	-- Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
 	-- impossible. Only the 24 indices which have non-zero entries make any sense.
 	-- We use a thresholding to set the coordinates in turn from the largest magnitude.
-	-- The number 3 in the "simplex" array is at the position of the largest coordinate.
+	-- The number 3 in the "sim" array is at the position of the largest coordinate.
 	
-	i1 = simplex[c][1]>=3 and 1 or 0;
-	j1 = simplex[c][2]>=3 and 1 or 0;
-	k1 = simplex[c][3]>=3 and 1 or 0;
-	l1 = simplex[c][4]>=3 and 1 or 0;
-	-- The number 2 in the "simplex" array is at the second largest coordinate.
-	i2 = simplex[c][1]>=2 and 1 or 0;
-	j2 = simplex[c][2]>=2 and 1 or 0;
-	k2 = simplex[c][3]>=2 and 1 or 0;
-	l2 = simplex[c][4]>=2 and 1 or 0;
-	-- The number 1 in the "simplex" array is at the second smallest coordinate.
-	i3 = simplex[c][1]>=1 and 1 or 0;
-	j3 = simplex[c][2]>=1 and 1 or 0;
-	k3 = simplex[c][3]>=1 and 1 or 0;
-	l3 = simplex[c][4]>=1 and 1 or 0;
+	i1 = sim[c][1]>=3 and 1 or 0;
+	j1 = sim[c][2]>=3 and 1 or 0;
+	k1 = sim[c][3]>=3 and 1 or 0;
+	l1 = sim[c][4]>=3 and 1 or 0;
+	-- The number 2 in the "sim" array is at the second largest coordinate.
+	i2 = sim[c][1]>=2 and 1 or 0;
+	j2 = sim[c][2]>=2 and 1 or 0;
+	k2 = sim[c][3]>=2 and 1 or 0;
+	l2 = sim[c][4]>=2 and 1 or 0;
+	-- The number 1 in the "sim" array is at the second smallest coordinate.
+	i3 = sim[c][1]>=1 and 1 or 0;
+	j3 = sim[c][2]>=1 and 1 or 0;
+	k3 = sim[c][3]>=1 and 1 or 0;
+	l3 = sim[c][4]>=1 and 1 or 0;
 	-- The fifth corner has all coordinate offsets = 1, so no need to look that up.
 	local x1 = x0 - i1 + G4; -- Offsets for second corner in (x,y,z,w) coords
 	local y1 = y0 - j1 + G4;
@@ -450,7 +450,7 @@ function Noise4D(x,y,z,w)
 	
 	local retval = 27.0 * (n0 + n1 + n2 + n3 + n4)
 	
-	if internalCache then
+	if simplex.internalCache then
 		if not Prev4D[x] then Prev4D[x] = {} end
 		if not Prev4D[x][y] then Prev4D[x][y] = {} end
 		if not Prev4D[x][y][z] then Prev4D[x][y][z] = {} end
@@ -466,12 +466,12 @@ local e = 2.71828182845904523536
 
 local PrevBlur2D = {}
 
-function GBlur2D(x,y,stdDev)
-	if internalCache and PrevBlur2D[x] and PrevBlur2D[x][y] and PrevBlur2D[x][y][stdDev] then return PrevBlur2D[x][y][stdDev] end
+function simplex.GBlur2D(x,y,stdDev)
+	if simplex.internalCache and PrevBlur2D[x] and PrevBlur2D[x][y] and PrevBlur2D[x][y][stdDev] then return PrevBlur2D[x][y][stdDev] end
 	local pwr = ((x^2+y^2)/(2*(stdDev^2)))*-1
 	local ret = ((1/(2*math.pi*(stdDev^2)))*e)^pwr
 	
-	if internalCache then
+	if simplex.internalCache then
 		if not PrevBlur2D[x] then PrevBlur2D[x] = {} end
 		if not PrevBlur2D[x][y] then PrevBlur2D[x][y] = {} end
 		PrevBlur2D[x][y][stdDev] = ret
@@ -481,26 +481,26 @@ end
 
 local PrevBlur1D = {}
 
-function GBlur1D(x,stdDev)
-	if internalCache and PrevBlur1D[x] and PrevBlur1D[x][stdDev] then return PrevBlur1D[x][stdDev] end
+function simplex.GBlur1D(x,stdDev)
+	if simplex.internalCache and PrevBlur1D[x] and PrevBlur1D[x][stdDev] then return PrevBlur1D[x][stdDev] end
 	local pwr = (x^2/(2*stdDev^2))*-1
 	local ret = ((1/(math.sqrt(2*math.pi)*stdDev))*e)^pwr
 
-	if internalCache then
+	if simplex.internalCache then
 		if not PrevBlur1D[x] then PrevBlur1D[x] = {} end
 		PrevBlur1D[x][stdDev] = ret
 	end
 	return ret
 end
 
-function FractalSum(func, iter, ...)
+function simplex.FractalSum(func, iter, ...)
     local ret = func(...)
     for i=1,iter do
         local power = 2^iter
         local s = power/i
         
         local scaled = {}
-        for elem in ipairs(...) do
+        for elem in ipairs({...}) do
             table.insert(scaled, elem*s)
         end
         ret = ret + (i/power)*(func(unpack(scaled)))
@@ -508,14 +508,14 @@ function FractalSum(func, iter, ...)
     return ret
 end
 
-function FractalSumAbs(func, iter, ...)
+function simplex.FractalSumAbs(func, iter, ...)
     local ret = math.abs(func(...))
     for i=1,iter do
         local power = 2^iter
         local s = power/i
         
         local scaled = {}
-        for elem in ipairs(...) do
+        for elem in ipairs({...}) do
             table.insert(scaled, elem*s)
         end
         ret = ret + (i/power)*(math.abs(func(unpack(scaled))))
@@ -523,14 +523,14 @@ function FractalSumAbs(func, iter, ...)
     return ret
 end
 
-function Turbulence(func, direction, iter, ...)
+function simplex.Turbulence(func, direction, iter, ...)
     local ret = math.abs(func(...))
     for i=1,iter do
         local power = 2^iter
         local s = power/i
         
         local scaled = {}
-        for elem in ipairs(...) do
+        for elem in ipairs({...}) do
             table.insert(scaled, elem*s)
         end
         ret = ret + (i/power)*(math.abs(func(unpack(scaled))))
@@ -540,115 +540,4 @@ function Turbulence(func, direction, iter, ...)
     return math.sin(dir_component+ret)
 end
 
---[[
-function FractalSum2DNoise(x,y,itier) --very expensive, much more so that standard 2D noise.
-	local ret = Noise2D(x,y)
-	for i=1,itier do
-		local itier = 2^itier
-		ret = ret + (i/itier)*(Noise2D(x*(itier/i),y*(itier/i)))
-	end
-	return ret
-end 
-
-function FractalSumAbs2DNoise(x,y,itier) --very expensive, much more so that standard 2D noise.
-	local ret = math.abs(Noise2D(x,y))
-	for i=1,itier do
-		local itier = 2^itier
-		ret = ret + (i/itier)*(math.abs(Noise2D(x*(itier/i),y*(itier/i))))
-	end
-	return ret
-end 
-
-function Turbulent2DNoise(x,y,itier,dir) --very expensive, much more so that standard 2D noise.
-	local ret = math.abs(Noise2D(x,y))
-	for i=1,itier do
-		local itier = 2^itier
-		ret = ret + (i/itier)*(math.abs(Noise2D(x*(itier/i),y*(itier/i))))
-	end
-	local direction
-	if dir==DIR_Y then
-		direction = y
-	else
-		direction = x
-	end
-	return math.sin(direction+ret)
-end 
-
-function FractalSum3DNoise(x,y,z,itier) --very expensive, much more so that standard 2D noise.
-	local ret = Noise3D(x,y,z)
-	for i=1,itier do
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(Noise3D(x*s,y*s,z*s))
-	end
-	return ret
-end 
-
-function FractalSumAbs3DNoise(x,y,z,itier) --very expensive, much more so that standard 2D noise.
-	local ret = math.abs(Noise3D(x,y,z))
-	for i=1,itier do
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(math.abs(Noise3D(x*s,y*s,z*s)))
-	end
-	return ret
-end 
-
-function Turbulent3DNoise(x,y,z,itier,dir) --very expensive, much more so that standard 2D noise.
-	local ret = math.abs(Noise3D(x,y,z))
-	for i=1,itier do
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(math.abs(Noise3D(x*s,y*s,z*s)))
-	end
-	local direction
-	if dir==DIR_Y then
-		direction = y
-	elseif dir==DIR_Z then
-		direction = z
-	else
-		direction = x
-	end
-	return math.sin(direction+ret)
-end 
-
-function FractalSum4DNoise(x,y,z,w,itier) --very expensive, much more so that standard 2D noise.
-	local ret = Noise4D(x,y,z,w)
-	for i=1,itier do
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(Noise4D(x*s,y*s,z*s,w*s))
-	end
-	return ret
-end 
-
-function FractalSumAbs4DNoise(x,y,z,w,itier) --very expensive, much more so that standard 2D noise.
-	local ret = math.abs(Noise4D(x,y,z,w))
-	for i=1,itier do	
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(math.abs(Noise4D(x*s,y*s,z*s,w*s)))
-	end
-	return ret
-end 
-
-function Turbulent4DNoise(x,y,z,w,itier,dir) --very expensive, much more so that standard 2D noise.
-	local x = vec.x
-	local ret = math.abs(Noise4D(x,y,z,w))
-	for i=1,itier do
-		local itier = 2^itier
-		local s = (itier/i)
-		ret = ret + (i/itier)*(math.abs(Noise4D(x*s,y*s,z*s,w*s)))
-	end
-	local direction
-	if dir==DIR_Y then
-		direction = y
-	elseif dir==DIR_Z then
-		direction = z
-	elseif dir==DIR_W then
-		direction = w
-	else
-		direction = x
-	end
-	return math.sin(direction+ret)
-end ]]
+return simplex
