@@ -59,24 +59,12 @@ describe("simplex noise",function(_ENV)
         it("functions with 2D Noise",function()
             assert(simplex.FractalSum(simplex.Noise2D, 10, 
                 0, 0))
-            assert(simplex.FractalSum(simplex.Noise2D, 10, 
-                0, 0))
         end)
         it("functions with 3D Noise",function()
             assert(simplex.FractalSum(simplex.Noise3D, 10, 
                 0, 0, 0))
-            assert(simplex.FractalSum(simplex.Noise3D, 10, 
-                0, 0, 0))
-            assert(simplex.FractalSum(simplex.Noise3D, 10, 
-                0, 0, 0))
         end)
         it("functions with 4D Noise",function()
-            assert(simplex.FractalSum(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
-            assert(simplex.FractalSum(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
-            assert(simplex.FractalSum(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
             assert(simplex.FractalSum(simplex.Noise4D, 10, 
                 0, 0, 0, 0))
         end)
@@ -86,24 +74,12 @@ describe("Fractal Sum Noise",function()
         it("functions with 2D Noise",function()
             assert(simplex.FractalSum(simplex.Noise2D, 10, 
                 0, 0))
-            assert(simplex.FractalSum(simplex.Noise2D, 10, 
-                0, 0))
         end)
         it("functions with 3D Noise",function()
             assert(simplex.FractalSumAbs(simplex.Noise3D, 10, 
                 0, 0, 0))
-            assert(simplex.FractalSumAbs(simplex.Noise3D, 10, 
-                0, 0, 0))
-            assert(simplex.FractalSumAbs(simplex.Noise3D, 10, 
-                0, 0, 0))
         end)
         it("functions with 4D Noise",function()
-            assert(simplex.FractalSumAbs(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
-            assert(simplex.FractalSumAbs(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
-            assert(simplex.FractalSumAbs(simplex.Noise4D, 10, 
-                0, 0, 0, 0))
             assert(simplex.FractalSumAbs(simplex.Noise4D, 10, 
                 0, 0, 0, 0))
         end)
