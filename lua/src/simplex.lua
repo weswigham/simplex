@@ -469,7 +469,7 @@ local PrevBlur2D = {}
 function simplex.GBlur2D(x,y,stdDev)
 	if simplex.internalCache and PrevBlur2D[x] and PrevBlur2D[x][y] and PrevBlur2D[x][y][stdDev] then return PrevBlur2D[x][y][stdDev] end
 	local pwr = ((x^2+y^2)/(2*(stdDev^2)))*-1
-	local ret = ((1/(2*math.pi*(stdDev^2)))*e)^pwr
+	local ret = (1/(2*math.pi*(stdDev^2)))*(e^pwr)
 	
 	if simplex.internalCache then
 		if not PrevBlur2D[x] then PrevBlur2D[x] = {} end
@@ -484,7 +484,7 @@ local PrevBlur1D = {}
 function simplex.GBlur1D(x,stdDev)
 	if simplex.internalCache and PrevBlur1D[x] and PrevBlur1D[x][stdDev] then return PrevBlur1D[x][stdDev] end
 	local pwr = (x^2/(2*stdDev^2))*-1
-	local ret = ((1/(math.sqrt(2*math.pi)*stdDev))*e)^pwr
+	local ret = (1/(math.sqrt(2*math.pi)*stdDev))*(e^pwr)
 
 	if simplex.internalCache then
 		if not PrevBlur1D[x] then PrevBlur1D[x] = {} end

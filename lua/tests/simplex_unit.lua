@@ -70,7 +70,7 @@ describe("simplex noise",function(_ENV)
         end)
     end)
     
-describe("Fractal Sum Noise",function()
+    describe("Fractal Sum Noise",function()
         it("functions with 2D Noise",function()
             assert(simplex.FractalSum(simplex.Noise2D, 10, 
                 0, 0))
@@ -82,6 +82,18 @@ describe("Fractal Sum Noise",function()
         it("functions with 4D Noise",function()
             assert(simplex.FractalSumAbs(simplex.Noise4D, 10, 
                 0, 0, 0, 0))
+        end)
+    end)
+    
+    describe("Gaussian blur in 1D",function()
+        it("functions",function()
+            assert(simplex.GBlur1D(0.3, 0.11))
+        end)
+    end)
+    
+    describe("Gaussian blur in 2D",function()
+        it("functions",function()
+            assert(simplex.GBlur2D(0.6, 0.11, 0.45))
         end)
     end)
 end)
