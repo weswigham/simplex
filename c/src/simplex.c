@@ -23,6 +23,60 @@ double Noise(genericNoise func, int len, double inputs[])
     }
 }
 
+double TurbulentNoise(genericNoise func, int dir, int iter, int len, double inputs[])
+{
+    double ret = fabs(Noise(func, len, inputs));
+
+    int i = 0;
+    for (i = 0 ; i < iter ; i++){
+        double num = pow(2,iter);
+        double scaled[len];
+        int j = 0;
+        for (j = 0; j < len; j++) {
+            scaled[j] = inputs[len]*(num/i);
+        }
+        ret = ret + (i/num)*fabs(Noise(func, len, scaled));
+    }
+    
+    return (double)sin(inputs[dir]+ret);
+}
+
+double FractalSumNoise(genericNoise func, int iter, int len, double inputs[])
+{
+    double ret = Noise(func, len, inputs);
+
+    int i = 0;
+    for (i = 0 ; i < iter ; i++){
+        double num = pow(2,iter);
+        double scaled[len];
+        int j = 0;
+        for (j = 0; j < len; j++) {
+            scaled[j] = inputs[len]*(num/i);
+        }
+        ret = ret + (i/num)*(Noise(func, len, scaled));
+    }
+    
+    return ret;
+}
+
+double FractalSumAbsNoise(genericNoise func, int iter, int len, double inputs[])
+{
+    double ret = fabs(Noise(func, len, inputs));
+
+    int i = 0;
+    for (i = 0 ; i < iter ; i++){
+        double num = pow(2,iter);
+        double scaled[len];
+        int j = 0;
+        for (j = 0; j < len; j++) {
+            scaled[j] = inputs[len]*(num/i);
+        }
+        ret = ret + (i/num)*fabs(Noise(func, len, scaled));
+    }
+    
+    return ret;
+}
+
 
 int gradients3d[12][3] = {{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},
 {1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1},
@@ -440,8 +494,10 @@ double Noise4D(double x,double y,double z,double w)
 
 double GBlur2D(double stdDev, double x, double y)
 {
+    if (fabs(stdDev)<=0.0) { return 0; }
+    
     double pwr = ((pow(x,2)+pow(y,2))/(2*pow(stdDev,2)))*-1;
-    double ret = pow((1/(2*PI*pow(stdDev,2)))*e,pwr);
+    double ret = (1/(2*PI*pow(stdDev,2)))*pow(e, pwr);
     
     return ret;
 }
@@ -449,211 +505,13 @@ double GBlur2D(double stdDev, double x, double y)
 
 double GBlur1D(double stdDev, double x)
 {
+    if (fabs(stdDev)<=0.0) { return 0; }
+    
     double pwr = (pow(x,2)/(2*pow(stdDev,2)))*-1;
-    double ret = pow((1/(sqrt(2*PI)*stdDev))*e, pwr);
+    double ret = (1/(sqrt(2*PI)*stdDev))*pow(e, pwr);
 
     return ret;
 }
-
-/*
-LUA_FUNCTION( FractalSum2DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double itier = g_Lua->GetNumber( 3 );
-
-    double ret = Noise2D(x,y);
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*(Noise2D(x*(num/i),y*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( FractalSumAbs2DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double itier = g_Lua->GetNumber( 3 );
-
-    double ret = abs(Noise2D(x,y));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise2D(x*(num/i),y*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( Turbulent2DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double itier = g_Lua->GetNumber( 3 );
-
-    double ret = abs(Noise2D(x,y));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise2D(x*(num/i),y*(num/i)));
-    }
-    g_Lua->Push(double (sin(x+ret)));
-    return 1;
-}
-
-LUA_FUNCTION( FractalSum3DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double itier = g_Lua->GetNumber( 4 );
-
-    double ret = Noise3D(x,y,z);
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*(Noise3D(x*(num/i),y*(num/i),z*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( FractalSumAbs3DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double itier = g_Lua->GetNumber( 4 );
-
-    double ret = abs(Noise3D(x,y,z));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise3D(x*(num/i),y*(num/i),z*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( Turbulent3DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double itier = g_Lua->GetNumber( 4 );
-
-    double ret = abs(Noise3D(x,y,z));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise3D(x*(num/i),y*(num/i),z*(num/i)));
-    }
-    g_Lua->Push(double (sin(x+ret)));
-    return 1;
-}
-
-LUA_FUNCTION( FractalSum4DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 5, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double w = g_Lua->GetNumber( 4 );
-    double itier = g_Lua->GetNumber( 5 );
-
-    double ret = Noise4D(x,y,z,w);
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*(Noise4D(x*(num/i),y*(num/i),z*(num/i),w*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( FractalSumAbs4DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 5, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double w = g_Lua->GetNumber( 4 );
-    double itier = g_Lua->GetNumber( 5 );
-
-    double ret = abs(Noise4D(x,y,z,w));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise4D(x*(num/i),y*(num/i),z*(num/i),w*(num/i)));
-    }
-    g_Lua->Push(double (ret));
-    return 1;
-}
-
-LUA_FUNCTION( Turbulent4DNoise )
-{
-    g_Lua->CheckType( 1, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 2, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 3, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 4, GLua::TYPE_NUMBER );
-    g_Lua->CheckType( 5, GLua::TYPE_NUMBER );
-
-    double x = g_Lua->GetNumber( 1 );
-    double y = g_Lua->GetNumber( 2 );
-    double z = g_Lua->GetNumber( 3 );
-    double w = g_Lua->GetNumber( 4 );
-    double itier = g_Lua->GetNumber( 5 );
-
-    double ret = abs(Noise4D(x,y,z,w));
-
-    for (int i = 0 ; i < itier ; i++){
-        double num = pow(2,itier);
-        ret = ret + (i/num)*abs(Noise4D(x*(num/i),y*(num/i),z*(num/i),w*(num/i)));
-    }
-    g_Lua->Push(double (sin(x+ret)));
-    return 1;
-}
-*/
 
 
 
