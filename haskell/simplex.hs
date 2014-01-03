@@ -172,3 +172,95 @@ noise3D x y z =
         
         --sum the contributions
         in 32 * (n0 + n1 + n2 + n3)
+        
+noise4D :: Double -> Double -> Double -> Double -> Double
+noise4D x y z w =
+    --coordinate skewwing/unskewwing
+    let f4 = ((sqrt 5) - 1)/4
+        g4 = (5 - sqrt 5)/20
+        
+        s = (x + y + z + w) * f4
+        i = floor (x + s)
+        j = floor (y + s)
+        k = floor (z + s)
+        l = floor (w + s)
+        
+        --find first corner
+        t = fromIntegral (i + j + k + l) * g4
+        x0 = x - (fromIntegral i - t)
+        y0 = y - (fromIntegral j - t)
+        z0 = z - (fromIntegral k - t)
+        w0 = w - (fromIntegral l - t)
+        
+        --figure out corner order via comparisons and then lookup table
+        c1 = if (x0 > y0) then 32 else 1
+        c2 = if (x0 > z0) then 16 else 1
+        c3 = if (y0 > z0) then 8 else 1
+        c4 = if (x0 > w0) then 4 else 1
+        c5 = if (y0 > w0) then 2 else 1
+        c6 = if (z0 > w0) then 1 else 1
+        c = c1 + c2 + c3 + c4 + c5 + c6
+        
+        --the actual lookups...
+        i1 = (if ((simplex !! c) !! 0 >=3) then 1 else 0)
+        j1 = (if ((simplex !! c) !! 1 >=3) then 1 else 0)
+        k1 = (if ((simplex !! c) !! 2 >=3) then 1 else 0)
+        l1 = (if ((simplex !! c) !! 3 >=3) then 1 else 0)
+        
+        i2 = (if ((simplex !! c) !! 0 >=2) then 1 else 0)
+        j2 = (if ((simplex !! c) !! 1 >=2) then 1 else 0)
+        k2 = (if ((simplex !! c) !! 2 >=2) then 1 else 0)
+        l2 = (if ((simplex !! c) !! 3 >=2) then 1 else 0)
+        
+        i3 = (if ((simplex !! c) !! 0 >=1) then 1 else 0)
+        j3 = (if ((simplex !! c) !! 1 >=1) then 1 else 0)
+        k3 = (if ((simplex !! c) !! 2 >=1) then 1 else 0)
+        l3 = (if ((simplex !! c) !! 3 >=1) then 1 else 0)
+        
+        --actual coordinate calculations
+        x1 = x0 - fromIntegral i1 + g4
+        y1 = y0 - fromIntegral j1 + g4
+        z1 = z0 - fromIntegral k1 + g4
+        w1 = w0 - fromIntegral l1 + g4
+        
+        x2 = x0 - fromIntegral i2 + 2*g4
+        y2 = y0 - fromIntegral j2 + 2*g4
+        z2 = z0 - fromIntegral k2 + 2*g4
+        w2 = w0 - fromIntegral l2 + 2*g4
+        
+        x3 = x0 - fromIntegral i3 + 3*g4
+        y3 = y0 - fromIntegral j3 + 3*g4
+        z3 = z0 - fromIntegral k3 + 3*g4
+        w3 = w0 - fromIntegral l3 + 3*g4
+        
+        x4 = x0 - 1 + 4*g4
+        y4 = y0 - 1 + 4*g4
+        z4 = z0 - 1 + 4*g4
+        w4 = w0 - 1 + 4*g4
+        
+        --find the gradient
+        ii = i `mod` 256
+        jj = j `mod` 256
+        kk = k `mod` 256
+        ll = l `mod` 256
+        
+        gi0 = perm !! (ii + (perm !! (jj + (perm !! (kk + (perm !! ll)))))) `mod` 32
+        gi1 = perm !! (ii + i1 + (perm !! (jj + j1 + (perm !! (kk + k1 + (perm !! (ll + l1))))))) `mod` 32
+        gi2 = perm !! (ii + i1 + (perm !! (jj + j2 + (perm !! (kk + k2 + (perm !! (ll + l2))))))) `mod` 32
+        gi3 = perm !! (ii + i1 + (perm !! (jj + j3 + (perm !! (kk + k3 + (perm !! (ll + l3))))))) `mod` 32
+        gi4 = perm !! (ii + i1 + (perm !! (jj + 1 + (perm !! (kk + 1 + (perm !! (ll + 1))))))) `mod` 32
+        
+        --contributions form each corner
+        t0 = 0.5 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0
+        t1 = 0.5 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1
+        t2 = 0.5 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2
+        t3 = 0.5 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3
+        t4 = 0.5 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4
+        
+        n0 = if (t0<0) then 0 else (t0 ** 4) * ((gradients4d !! gi0) `dot` [x0,y0,z0,w0])
+        n1 = if (t1<0) then 0 else (t1 ** 4) * ((gradients4d !! gi1) `dot` [x1,y1,z1,w1])
+        n2 = if (t2<0) then 0 else (t2 ** 4) * ((gradients4d !! gi2) `dot` [x2,y2,z2,w2])
+        n3 = if (t3<0) then 0 else (t3 ** 4) * ((gradients4d !! gi3) `dot` [x3,y3,z3,w3])
+        n4 = if (t4<0) then 0 else (t4 ** 4) * ((gradients4d !! gi4) `dot` [x4,y4,z4,w4])
+        
+        in 27 * (n0 + n1 + n2 + n3 + n4)

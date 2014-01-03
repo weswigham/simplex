@@ -395,20 +395,20 @@ double Noise4D(double x,double y,double z,double w)
     // We use a thresholding to set the coordinates in turn from the largest magnitude.
     // The number 3 in the "simplex" array is at the position of the largest coordinate.
     
-    i1 = simplex[c][1]>=3 ? 1 : 0;
-    j1 = simplex[c][2]>=3 ? 1 : 0;
-    k1 = simplex[c][3]>=3 ? 1 : 0;
-    l1 = simplex[c][4]>=3 ? 1 : 0;
+    i1 = simplex[c][0]>=3 ? 1 : 0;
+    j1 = simplex[c][1]>=3 ? 1 : 0;
+    k1 = simplex[c][2]>=3 ? 1 : 0;
+    l1 = simplex[c][3]>=3 ? 1 : 0;
     // The number 2 in the "simplex" array is at the second largest co:dinate.
-    i2 = simplex[c][1]>=2 ? 1 : 0;
-    j2 = simplex[c][2]>=2 ? 1 : 0;
-    k2 = simplex[c][3]>=2 ? 1 : 0;
-    l2 = simplex[c][4]>=2 ? 1 : 0;
+    i2 = simplex[c][0]>=2 ? 1 : 0;
+    j2 = simplex[c][1]>=2 ? 1 : 0;
+    k2 = simplex[c][2]>=2 ? 1 : 0;
+    l2 = simplex[c][3]>=2 ? 1 : 0;
     // The number 1 in the "simplex" array is at the second smallest co:dinate.
-    i3 = simplex[c][1]>=1 ? 1 : 0;
-    j3 = simplex[c][2]>=1 ? 1 : 0;
-    k3 = simplex[c][3]>=1 ? 1 : 0;
-    l3 = simplex[c][4]>=1 ? 1 : 0;
+    i3 = simplex[c][0]>=1 ? 1 : 0;
+    j3 = simplex[c][1]>=1 ? 1 : 0;
+    k3 = simplex[c][2]>=1 ? 1 : 0;
+    l3 = simplex[c][3]>=1 ? 1 : 0;
     // The fifth corner has all coordinate offsets = 1, so no need to look that up.
     double x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
     double y1 = y0 - j1 + G4;
