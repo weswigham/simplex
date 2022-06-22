@@ -6,7 +6,7 @@ A lua module to create simplex noise. Originally published under the pseudonym L
 Functions
 ---------
 
-######Noise2D
+##### Noise2D
 ```lua
     --Noise function taking two numeric inputs: x and y
     --Returns a number between -1 and 1 (inclusive)
@@ -15,21 +15,21 @@ Functions
 
 
 
-######Noise3D
+##### Noise3D
 ```lua
     --Noise function taking three numeric inputs: x, y, and z
     --Returns a number between -1 and 1 (inclusive)
     local n = simplex.Noise3D(x, y, z)
 ```
 
-######Noise4D
+##### Noise4D
 ```lua
     --Noise function taking four numeric inputs: x, y, z, and w
     --Returns a number between -1 and 1 (inclusive)
     local n = simplex.Noise4D(x, y, z, w)
 ```
 
-######GBlur2D
+##### GBlur2D
 ```lua
     --Gaussian Blur function on two dimensions
     --Returns a number
@@ -42,7 +42,7 @@ Functions
     local n = simplex.GBlur2D(x, y, stdDev)
 ```
 
-######GBlur1D
+##### GBlur1D
 ```lua
     --Gaussian Blur function on one dimension
     --Returns a number
@@ -56,7 +56,7 @@ Functions
 ```
 Note: The GBlur1D function can be considered as the generalization of the function into N-dimensions by running it once for each dimension and combining the parts.
 
-######FractalSum
+##### FractalSum
 ```lua
     --A fractal sum iterative modifier for noise values
     --Returns a number between -1 and 1 (inclusive)
@@ -68,7 +68,7 @@ Note: The GBlur1D function can be considered as the generalization of the functi
     local n = simplex.FractalSum(func, iter, ...)
 ```
 
-######FractalSumAbs
+##### FractalSumAbs
 ```lua
     --A absolute value fractal sum iterative modifier for noise values
     --Returns a number between 0 and 1 (inclusive)
@@ -80,7 +80,7 @@ Note: The GBlur1D function can be considered as the generalization of the functi
     local n = simplex.FractalSumAbs(func, iter, ...)
 ```
 
-######Turbulence
+##### Turbulence
 ```lua
     --A turbulence iterative modifier for noise values
     --Returns a number between -1 and 1 (inclusive)
